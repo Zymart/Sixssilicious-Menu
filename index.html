@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sixssilicious | Admin Panel</title>
+    <title>Sixssilicious | Nutritious Bite</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -19,18 +19,24 @@
 
     <nav>
         <div class="nav-container">
-            <div class="logo">🥗 SIXSSILICIOUS</div>
+            <div class="brand">
+                <img src="1000041430.png" alt="SNB Logo" class="nav-logo">
+                <span class="logo-text">SIXSSILICIOUS</span>
+            </div>
             <button id="open-login-btn" class="admin-icon-btn">⚙️ Admin</button>
         </div>
     </nav>
 
     <header class="hero">
-        <h1>SIXSSILICIOUS</h1>
-        <p>Handcrafted with passion</p>
+        <div class="hero-content">
+            <h1>SIMPLE & DELICIOUS NUTRITIOUS BITES</h1>
+            <p>Handcrafted with passion • Unang tikim, lasap mo ang lalim</p>
+        </div>
     </header>
 
     <main class="container">
-        <div id="product-grid" class="grid"></div>
+        <div id="product-grid" class="grid">
+            </div>
     </main>
 
     <div id="login-modal" class="modal">
@@ -46,16 +52,16 @@
 
     <div id="admin-panel" class="admin-panel">
         <div class="admin-container">
-            <h3>New Post:</h3>
+            <div class="panel-header">ADMIN CONTROL PANEL</div>
             <div class="admin-inputs">
-                <input type="text" id="new-name" placeholder="Item Name">
-                <input type="text" id="new-cat" placeholder="Category">
+                <input type="text" id="new-name" placeholder="Post Title (e.g. Vegan Mushroom)">
+                <input type="text" id="new-cat" placeholder="Category (e.g. ONE POT)">
                 <label class="file-upload">
-                    📷 Upload Image
+                    📷 Upload Food Photo
                     <input type="file" id="new-image-file" accept="image/*">
                 </label>
-                <button id="add-btn">Post to Website</button>
-                <button id="logout-btn" class="logout">Logout</button>
+                <button id="add-btn">POST TO WEBSITE</button>
+                <button id="logout-btn" class="logout">LOGOUT</button>
             </div>
         </div>
     </div>
