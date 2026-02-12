@@ -1,5 +1,11 @@
 const BIN_ID = '698dbb6d43b1c97be9795688';
 const API_KEY = '$2a$10$McXg3fOwbLYW3Sskgfroj.nzMjtwwubDEz08zXpBN32KQ.8MvCJgK';
+const productGrid = document.getElementById('product-grid');
+
+// Check Login State
+function checkAuth() {
+    return localStorage.getItem('snb_auth') === 'true';
+}
 
 async function loadFromCloud() {
     try {
@@ -12,6 +18,11 @@ async function loadFromCloud() {
 }
 
 async function saveToCloud(dataArray) {
+    if (!checkAuth()) {
+        alert("Session Expired. Please log in again.");
+        location.reload();
+        return false;
+    }
     try {
         await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
             method: 'PUT',
@@ -30,11 +41,7 @@ const scrollObserver = new IntersectionObserver((entries) => {
 
 async function draw() {
     const posts = await loadFromCloud();
-    const foodGrid = document.getElementById('food-grid');
-    const drinksGrid = document.getElementById('drinks-grid');
-    
-    foodGrid.innerHTML = '';
-    drinksGrid.innerHTML = '';
+    productGrid.innerHTML = '';
 
     posts.forEach((p) => {
         const card = document.createElement('div');
@@ -43,60 +50,67 @@ async function draw() {
             <button class="del-btn" onclick="removePost('${p.id}')">×</button>
             <img src="${p.img}">
             <div class="card-content">
-                <span style="color:var(--accent); font-size:0.7rem;">${p.cat}</span>
-                <h3>${p.name}</h3>
+                <span class="cat-label">${p.cat}</span>
+                <h3 style="margin:5px 0;">${p.name}</h3>
                 <span class="price-display">₱${p.price || '0'}</span>
             </div>
         `;
-
-        // FIXED SORTING LOGIC
-        const cleanCat = p.cat.toLowerCase();
-        if (cleanCat.includes("drink") || cleanCat.includes("tea") || cleanCat.includes("juice")) {
-            drinksGrid.appendChild(card);
-        } else {
-            foodGrid.appendChild(card);
-        }
-        
+        productGrid.appendChild(card);
         scrollObserver.observe(card);
     });
 }
 
-// ADMIN PANEL LOGIC
-if (localStorage.getItem('snb_auth') === 'true') {
+// LOGIN LOGIC
+if (checkAuth()) {
     document.getElementById('admin-panel').style.display = 'block';
     document.body.classList.add('admin-mode');
+    document.getElementById('open-login-btn').style.display = 'none';
 }
 
 document.getElementById('submit-login').onclick = () => {
     const user = document.getElementById('user-input').value;
     const pass = document.getElementById('pass-input').value;
-    if (["Zymart", "Brigette", "Lance", "Taduran"].includes(user) && pass === "sixssiliciousteam") {
+    const authorized = ["Zymart", "Brigette", "Lance", "Taduran"];
+    
+    if (authorized.includes(user) && pass === "sixssiliciousteam") {
         localStorage.setItem('snb_auth', 'true');
         location.reload();
+    } else {
+        document.getElementById('error-msg').style.display = 'block';
     }
 };
 
+// PUBLISH LOGIC
 document.getElementById('add-btn').onclick = async () => {
+    if (!checkAuth()) {
+        alert("You must be logged in to publish.");
+        return;
+    }
+
     const name = document.getElementById('new-name').value;
     const price = document.getElementById('new-price').value;
     const cat = document.getElementById('new-cat').value;
     const file = document.getElementById('new-image-file').files[0];
 
     if (name && price && cat && file) {
-        document.getElementById('add-btn').innerText = "PUBLISHING...";
+        document.getElementById('add-btn').innerText = "SYNCING...";
         const reader = new FileReader();
         reader.onload = async (e) => {
             let current = await loadFromCloud();
             current.push({ id: Date.now().toString(), name, price, cat, img: e.target.result });
-            await saveToCloud(current);
-            location.reload(); 
+            if (await saveToCloud(current)) {
+                location.reload();
+            }
         };
         reader.readAsDataURL(file);
+    } else {
+        alert("Missing information!");
     }
 };
 
 window.removePost = async (id) => {
-    if(confirm("Delete this?")) {
+    if (!checkAuth()) return;
+    if(confirm("Delete item?")) {
         let current = await loadFromCloud();
         current = current.filter(item => item.id !== id);
         await saveToCloud(current);
@@ -108,4 +122,6 @@ document.getElementById('open-login-btn').onclick = () => document.getElementByI
 document.getElementById('close-modal').onclick = () => document.getElementById('login-modal').style.display='none';
 document.getElementById('logout-btn').onclick = () => { localStorage.clear(); location.reload(); };
 
+// KEEP ALIVE: Refresh every 2 minutes
+setInterval(draw, 120000);
 draw();
