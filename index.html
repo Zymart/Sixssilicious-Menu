@@ -3,45 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Steel & Smoke Menu</title>
+    <title>Sixssilicious Admin</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header>
-    <h1>STEEL & SMOKE</h1>
-    <p class="tagline">GRITTY • SMOKY • BOLD</p>
-</header>
-
-<div class="container">
-    <h2 class="category-header">THE HANDHELDS</h2>
-    
-    <div class="menu-card">
-        <div>
-            <div class="item-name">The Anvil Burger <span class="badge">HOT</span></div>
-            <div class="item-desc">Double smashed patties, ghost pepper jack, charred jalapeños.</div>
-        </div>
-        <div class="item-price">$18</div>
+    <div id="login-container">
+        <h1>SIXSSILICIOUS</h1>
+        <p class="accent-text">TEAM ACCESS ONLY</p>
+        
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button id="login-btn">Login</button>
+        <p id="error-msg" class="error">Access Denied: Invalid Credentials</p>
     </div>
 
-    <div class="menu-card">
-        <div>
-            <div class="item-name">Ironclad Chicken</div>
-            <div class="item-desc">Buttermilk fried thigh, slaw, industrial sauce, brioche.</div>
+    <div id="main-content" style="display: none;">
+        <div class="admin-banner">ACCESS GRANTED: ADMIN PANEL ACTIVE</div>
+        <h1>SIXSSILICIOUS</h1>
+        <div class="dashboard-box">
+            <p>Welcome to the command center.</p>
+            <p>Products have been cleared. Ready for new input.</p>
         </div>
-        <div class="item-price">$16</div>
+        
+        <button id="logout-btn" class="outline-btn">Logout</button>
     </div>
 
-    <h2 class="category-header">SIDES</h2>
-
-    <div class="menu-card">
-        <div>
-            <div class="item-name">Rusty Fries</div>
-            <div class="item-desc">Seasoned with smoked paprika, garlic, and sea salt.</div>
-        </div>
-        <div class="item-price">$7</div>
-    </div>
-</div>
-
+    <script src="script.js"></script>
 </body>
 </html>
