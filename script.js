@@ -2,11 +2,20 @@ const BIN_ID = '698dbb6d43b1c97be9795688';
 const API_KEY = '$2a$10$McXg3fOwbLYW3Sskgfroj.nzMjtwwubDEz08zXpBN32KQ.8MvCJgK';
 const productGrid = document.getElementById('product-grid');
 
-// Check Login State
-function checkAuth() {
-    return localStorage.getItem('snb_auth') === 'true';
-}
+// 1. RE-USABLE ANIMATION OBSERVER
+const createObserver = () => {
+    return new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+            }
+        });
+    }, { threshold: 0.15 });
+};
 
+let scrollObserver = createObserver();
+
+// 2. CLOUD FUNCTIONS
 async function loadFromCloud() {
     try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?meta=false`, {
@@ -14,34 +23,37 @@ async function loadFromCloud() {
         });
         const data = await res.json();
         return data.recipes || [];
-    } catch (err) { return []; }
+    } catch (err) {
+        console.error("Load failed", err);
+        return [];
+    }
 }
 
 async function saveToCloud(dataArray) {
-    if (!checkAuth()) {
-        alert("Session Expired. Please log in again.");
-        location.reload();
-        return false;
-    }
     try {
-        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+            headers: { 
+                'Content-Type': 'application/json', 
+                'X-Master-Key': API_KEY 
+            },
             body: JSON.stringify({ "recipes": dataArray })
         });
-        return true;
-    } catch (err) { return false; }
+        return res.ok;
+    } catch (err) {
+        console.error("Save failed", err);
+        return false;
+    }
 }
 
-const scrollObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) entry.target.classList.add('is-visible');
-    });
-}, { threshold: 0.1 });
-
+// 3. DRAW FUNCTION (RESETS ANIMATIONS)
 async function draw() {
     const posts = await loadFromCloud();
     productGrid.innerHTML = '';
+    
+    // Refresh Observer
+    scrollObserver.disconnect();
+    scrollObserver = createObserver();
 
     posts.forEach((p) => {
         const card = document.createElement('div');
@@ -60,8 +72,8 @@ async function draw() {
     });
 }
 
-// LOGIN LOGIC
-if (checkAuth()) {
+// 4. ADMIN & LOGIN
+if (localStorage.getItem('snb_auth') === 'true') {
     document.getElementById('admin-panel').style.display = 'block';
     document.body.classList.add('admin-mode');
     document.getElementById('open-login-btn').style.display = 'none';
@@ -70,9 +82,7 @@ if (checkAuth()) {
 document.getElementById('submit-login').onclick = () => {
     const user = document.getElementById('user-input').value;
     const pass = document.getElementById('pass-input').value;
-    const authorized = ["Zymart", "Brigette", "Lance", "Taduran"];
-    
-    if (authorized.includes(user) && pass === "sixssiliciousteam") {
+    if (["Zymart", "Brigette", "Lance", "Taduran"].includes(user) && pass === "sixssiliciousteam") {
         localStorage.setItem('snb_auth', 'true');
         location.reload();
     } else {
@@ -80,41 +90,51 @@ document.getElementById('submit-login').onclick = () => {
     }
 };
 
-// PUBLISH LOGIC
+// 5. ADD PRODUCT (FIXED MULTIPLE ADDS)
 document.getElementById('add-btn').onclick = async () => {
-    if (!checkAuth()) {
-        alert("You must be logged in to publish.");
-        return;
-    }
-
     const name = document.getElementById('new-name').value;
     const price = document.getElementById('new-price').value;
     const cat = document.getElementById('new-cat').value;
-    const file = document.getElementById('new-image-file').files[0];
+    const fileInput = document.getElementById('new-image-file');
+    const file = fileInput.files[0];
 
     if (name && price && cat && file) {
-        document.getElementById('add-btn').innerText = "SYNCING...";
+        const btn = document.getElementById('add-btn');
+        btn.innerText = "PUBLISHING...";
+        btn.disabled = true;
+
         const reader = new FileReader();
         reader.onload = async (e) => {
-            let current = await loadFromCloud();
-            current.push({ id: Date.now().toString(), name, price, cat, img: e.target.result });
-            if (await saveToCloud(current)) {
-                location.reload();
+            const current = await loadFromCloud();
+            const newItem = { id: Date.now().toString(), name, price, cat, img: e.target.result };
+            current.push(newItem);
+            
+            const success = await saveToCloud(current);
+            if (success) {
+                // Clear inputs
+                document.getElementById('new-name').value = '';
+                document.getElementById('new-price').value = '';
+                document.getElementById('new-cat').value = '';
+                fileInput.value = '';
+                await draw(); // Refresh the list without reloading the whole page
+            } else {
+                alert("Upload failed. Try a smaller photo.");
             }
+            btn.innerText = "PUBLISH";
+            btn.disabled = false;
         };
         reader.readAsDataURL(file);
     } else {
-        alert("Missing information!");
+        alert("Fill all fields!");
     }
 };
 
 window.removePost = async (id) => {
-    if (!checkAuth()) return;
     if(confirm("Delete item?")) {
         let current = await loadFromCloud();
         current = current.filter(item => item.id !== id);
-        await saveToCloud(current);
-        draw();
+        const success = await saveToCloud(current);
+        if (success) draw();
     }
 };
 
@@ -122,6 +142,5 @@ document.getElementById('open-login-btn').onclick = () => document.getElementByI
 document.getElementById('close-modal').onclick = () => document.getElementById('login-modal').style.display='none';
 document.getElementById('logout-btn').onclick = () => { localStorage.clear(); location.reload(); };
 
-// KEEP ALIVE: Refresh every 2 minutes
-setInterval(draw, 120000);
+// Initial Load
 draw();
