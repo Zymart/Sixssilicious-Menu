@@ -1,49 +1,79 @@
 :root {
-    --bg: #0a0a0a;
-    --card-bg: #151515;
-    --accent: #39ff14; /* Neon Green from your logo */
+    --bg: #0d0d0d;
+    --card: #1a1a1a;
+    --accent: #39ff14; /* Neon Green matching your logo */
     --text: #ffffff;
+    --glass: rgba(255, 255, 255, 0.05);
 }
 
 body { 
     margin: 0; font-family: 'Montserrat', sans-serif; 
-    background-color: var(--bg); color: var(--text); 
+    background-color: var(--bg); color: var(--text);
+    overflow-x: hidden;
 }
 
-/* Nav Bar */
-nav { background: #000; padding: 10px 0; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 100; }
+/* Navbar with Blur */
+nav { 
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(15px); 
+    padding: 10px 0; border-bottom: 2px solid var(--accent); 
+    position: sticky; top: 0; z-index: 1000; 
+}
 .nav-container { max-width: 1200px; margin: auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
-.nav-logo { height: 55px; filter: drop-shadow(0 0 5px var(--accent)); }
-.logo-text { font-weight: 900; color: var(--accent); letter-spacing: 2px; margin-left: 10px; }
+.nav-logo { height: 50px; filter: drop-shadow(0 0 8px var(--accent)); }
+.logo-text { font-weight: 900; color: var(--accent); letter-spacing: 2px; }
 
-/* Hero Section */
-.hero { text-align: center; padding: 100px 20px; position: relative; }
-.tagline { color: var(--accent); font-weight: 700; letter-spacing: 4px; font-size: 0.8rem; }
-.hero h1 { font-size: clamp(1.5rem, 6vw, 3rem); font-weight: 900; margin: 15px 0; }
-.glow-line { width: 80px; height: 4px; background: var(--accent); margin: auto; box-shadow: 0 0 15px var(--accent); }
+/* Hero Section with Glow */
+.hero { text-align: center; padding: 120px 20px; position: relative; }
+.hero-bg-glow { 
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+    width: 400px; height: 400px; background: var(--accent); 
+    filter: blur(180px); opacity: 0.1; z-index: -1; 
+}
+.tagline { color: var(--accent); font-weight: 700; letter-spacing: 5px; font-size: 0.8rem; }
+.hero h1 { font-size: clamp(2.5rem, 10vw, 4.5rem); margin: 15px 0; font-weight: 900; }
+.glow-bar { width: 100px; height: 5px; background: var(--accent); margin: auto; box-shadow: 0 0 20px var(--accent); }
 
-/* Grid & Cards */
+/* Animated Cards Grid */
 .container { max-width: 1200px; margin: auto; padding: 40px 20px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 35px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 40px; }
 
-.product-card { background: var(--card-bg); border-radius: 15px; overflow: hidden; border: 1px solid #333; position: relative; transition: 0.3s; }
-.product-card:hover { transform: translateY(-10px); border-color: var(--accent); }
-.product-card img { width: 100%; height: 280px; object-fit: cover; }
-.card-content { padding: 25px; text-align: center; }
-.category { color: var(--accent); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 10px; display: block; }
+.product-card { 
+    background: var(--card); border-radius: 20px; overflow: hidden; 
+    border: 1px solid #333; position: relative; 
+    opacity: 0; transform: translateY(30px); transition: 0.6s all ease-out; 
+}
+.product-card.show { opacity: 1; transform: translateY(0); }
+.product-card:hover { border-color: var(--accent); box-shadow: 0 0 25px rgba(57, 255, 20, 0.15); }
+.product-card img { width: 100%; height: 300px; object-fit: cover; }
+.card-content { padding: 30px; text-align: center; }
 
-/* Admin UI Elements */
-.admin-dock { display: none; position: fixed; bottom: 0; width: 100%; background: #000; border-top: 3px solid var(--accent); padding: 20px; z-index: 2000; }
-.dock-inputs { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
-input { background: #222; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 5px; }
-button { background: var(--accent); color: #000; border: none; padding: 12px 25px; font-weight: 900; cursor: pointer; border-radius: 5px; }
+/* Glassmorphism Modal */
+.modal { 
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); 
+    z-index:5000; justify-content:center; align-items:center; 
+}
+.glass-box { 
+    background: var(--glass); backdrop-filter: blur(20px); 
+    padding: 50px; border: 1px solid rgba(255,255,255,0.1); 
+    border-radius: 24px; text-align: center; width: 340px; 
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+}
+.error-msg { color: #ff4757; font-weight: 700; margin-top: 20px; display: none; }
 
-/* Login/Modals */
-.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:5000; justify-content:center; align-items:center; }
-.modal-box { background: #111; padding: 40px; border: 1px solid var(--accent); text-align: center; border-radius: 15px; width: 320px; }
-.error-text { color: #ff4757; font-weight: 700; font-size: 0.8rem; margin-top: 15px; }
+/* Admin Dock */
+.admin-dock { 
+    display: none; position: fixed; bottom: 0; width: 100%; 
+    background: #000; padding: 25px; border-top: 4px solid var(--accent); z-index: 2000; 
+}
+.dock-container { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
 
-/* Overlay Animation */
-.overlay { display: none; position: fixed; inset: 0; background: var(--accent); color: #000; z-index: 9999; justify-content: center; align-items: center; text-align: center; }
-.del-btn { display: none; position: absolute; top: 10px; right: 10px; background: #ff4757; color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-weight: bold; }
+input { background: #222; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; }
+button { background: var(--accent); color: #000; padding: 12px 30px; border: none; font-weight: 900; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+button:hover { transform: scale(1.05); filter: brightness(1.2); }
+
+.del-btn { 
+    display: none; position: absolute; top: 15px; right: 15px; 
+    background: #ff4757; color: #fff; border: none; width: 40px; height: 40px; 
+    border-radius: 50%; cursor: pointer; z-index: 10; font-weight: bold; 
+}
 body.admin-mode .del-btn { display: block; }
