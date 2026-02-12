@@ -4,23 +4,22 @@ const API_KEY = '$2a$10$McXg3fOwbLYW3Sskgfroj.nzMjtwwubDEz08zXpBN32KQ.8MvCJgK';
 const grid = document.getElementById('product-grid');
 const adminDock = document.getElementById('admin-panel');
 
-// --- 1. CLOUD SYNC LOGIC (FIXED) ---
+// --- 1. CLOUD SYNC LOGIC (TARGETING "recipes" KEY) ---
 async function loadFromCloud() {
     try {
-        // Adding ?meta=false ensures we get ONLY the product array
-        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?meta=false`, {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
             headers: { 'X-Master-Key': API_KEY }
         });
-        if (!res.ok) throw new Error("Cloud Error");
         const data = await res.json();
-        return Array.isArray(data) ? data : [];
+        // Extracting specifically from the "recipes" key shown in your screenshot
+        return data.record.recipes || [];
     } catch (err) {
-        console.warn("Cloud offline, loading local cache...");
-        return JSON.parse(localStorage.getItem('snb_cache')) || [];
+        console.error("Cloud Load Error:", err);
+        return [];
     }
 }
 
-async function saveToCloud(data) {
+async function saveToCloud(dataArray) {
     try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
             method: 'PUT',
@@ -28,24 +27,22 @@ async function saveToCloud(data) {
                 'Content-Type': 'application/json', 
                 'X-Master-Key': API_KEY 
             },
-            body: JSON.stringify(data)
+            // Wrapping the list back into the "recipes" object structure
+            body: JSON.stringify({ "recipes": dataArray })
         });
-        if (res.ok) {
-            localStorage.setItem('snb_cache', JSON.stringify(data));
-            console.log("Cloud Updated!");
-        }
+        const result = await res.json();
+        console.log("Cloud Updated:", result);
     } catch (err) {
-        console.error("Cloud Save Failed:", err);
+        console.error("Cloud Save Error:", err);
     }
 }
 
-// --- 2. REPEAT SCROLL ANIMATION ---
+// --- 2. REPEAT ANIMATION ---
 const scrollObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.classList.add('is-visible');
         } else {
-            // Reset state when scrolling away
             entry.target.classList.remove('is-visible'); 
         }
     });
@@ -56,10 +53,6 @@ async function draw() {
     grid.innerHTML = '<p style="color:var(--accent); text-align:center; width:100%;">Syncing Cloud Data...</p>';
     const posts = await loadFromCloud();
     grid.innerHTML = '';
-
-    if (posts.length === 0) {
-        grid.innerHTML = '<p style="text-align:center; width:100%; opacity:0.5;">No products found in cloud.</p>';
-    }
 
     posts.forEach((p) => {
         const card = document.createElement('div');
@@ -145,5 +138,5 @@ document.getElementById('logout-btn').onclick = () => {
 document.getElementById('open-login-btn').onclick = () => document.getElementById('login-modal').style.display='flex';
 document.getElementById('close-modal').onclick = () => document.getElementById('login-modal').style.display='none';
 
-// Load
+// Initial Load
 draw();
