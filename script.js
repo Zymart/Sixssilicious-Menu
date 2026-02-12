@@ -1,84 +1,105 @@
 const grid = document.getElementById('product-grid');
-const adminPanel = document.getElementById('admin-panel');
+const adminDock = document.getElementById('admin-panel');
 const loginBtn = document.getElementById('open-login-btn');
 
-// --- 1. THE SESSION FIX ---
-// This runs as soon as the JS loads, before anything else
-if (localStorage.getItem('sixss_is_admin') === 'true') {
-    document.body.classList.add('admin-active');
-    setTimeout(() => { adminPanel.style.display = 'block'; }, 100);
-    loginBtn.style.display = 'none';
+// --- 1. INSTANT ADMIN CHECK ---
+if (localStorage.getItem('snb_admin_status') === 'active') {
+    document.addEventListener('DOMContentLoaded', () => {
+        enableAdminMode();
+    });
 }
 
-// --- 2. THE POSTS FIX ---
-let items = JSON.parse(localStorage.getItem('sixss_store')) || [];
+// --- 2. DATA MANAGEMENT ---
+let posts = JSON.parse(localStorage.getItem('snb_posts')) || [];
 
-function draw() {
+window.onload = () => {
+    render();
+};
+
+// --- 3. LOGIN LOGIC ---
+document.getElementById('submit-login').onclick = () => {
+    const user = document.getElementById('user-input').value;
+    const pass = document.getElementById('pass-input').value;
+    const team = ["Zymart", "Brigette", "Lance", "Taduran"];
+
+    if (team.includes(user) && pass === "sixssiliciousteam") {
+        localStorage.setItem('snb_admin_status', 'active');
+        document.getElementById('login-modal').style.display = 'none';
+        document.getElementById('access-overlay').style.display = 'flex';
+        
+        setTimeout(() => {
+            location.reload(); // Reloads once to lock in the admin state
+        }, 1200);
+    } else {
+        document.getElementById('error-msg').style.display = 'block';
+    }
+};
+
+function enableAdminMode() {
+    adminDock.style.display = 'block';
+    loginBtn.style.display = 'none';
+    document.body.classList.add('admin-mode');
+}
+
+// --- 4. POSTING LOGIC ---
+document.getElementById('add-btn').onclick = () => {
+    const name = document.getElementById('new-name').value;
+    const cat = document.getElementById('new-cat').value;
+    const fileInput = document.getElementById('new-image-file');
+    const file = fileInput.files[0];
+
+    if (name && cat && file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const newItem = { id: Date.now(), name, cat, img: e.target.result };
+            posts.push(newItem);
+            localStorage.setItem('snb_posts', JSON.stringify(posts));
+            render();
+            
+            // Clear inputs
+            document.getElementById('new-name').value = '';
+            document.getElementById('new-cat').value = '';
+            fileInput.value = '';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        alert("Please fill in everything and upload a photo!");
+    }
+};
+
+function render() {
     grid.innerHTML = '';
-    items.forEach((item) => {
+    posts.forEach(p => {
         const div = document.createElement('div');
         div.className = 'product-card';
         div.innerHTML = `
-            <button class="del-btn" onclick="remove(${item.id})">×</button>
-            <img src="${item.image}">
+            <button class="del-btn" onclick="remove(${p.id})">×</button>
+            <img src="${p.img}">
             <div class="card-content">
-                <span class="category">${item.cat}</span>
-                <h3>${item.name}</h3>
-                <div style="color:var(--snb-yellow); margin-top:10px;">⭐⭐⭐⭐⭐</div>
+                <span class="category">${p.cat}</span>
+                <h3>${p.name}</h3>
+                <div style="color:var(--accent); margin-top:10px;">⭐⭐⭐⭐⭐ 5.0</div>
             </div>
         `;
         grid.appendChild(div);
     });
 }
 
-// --- 3. LOGIN LOGIC ---
-document.getElementById('submit-login').onclick = () => {
-    const u = document.getElementById('user-input').value;
-    const p = document.getElementById('pass-input').value;
-    const team = ["Zymart", "Brigette", "Lance", "Taduran"];
-
-    if (team.includes(u) && p === "sixssiliciousteam") {
-        localStorage.setItem('sixss_is_admin', 'true');
-        document.getElementById('login-modal').style.display = 'none';
-        document.getElementById('access-overlay').style.display = 'flex';
-        setTimeout(() => { location.reload(); }, 1000); // Reload to lock admin in
-    } else {
-        alert("Wrong credentials!");
-    }
-};
-
-// --- 4. POSTING LOGIC ---
-document.getElementById('add-btn').onclick = () => {
-    const name = document.getElementById('new-name').value;
-    const cat = document.getElementById('new-cat').value;
-    const file = document.getElementById('new-image-file').files[0];
-
-    if (name && cat && file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const newItem = { id: Date.now(), name, cat, image: e.target.result };
-            items.push(newItem);
-            localStorage.setItem('sixss_store', JSON.stringify(items));
-            draw();
-            document.getElementById('new-name').value = '';
-        };
-        reader.readAsDataURL(file);
-    }
-};
-
 window.remove = (id) => {
-    items = items.filter(i => i.id !== id);
-    localStorage.setItem('sixss_store', JSON.stringify(items));
-    draw();
+    if(confirm("Delete this post?")) {
+        posts = posts.filter(p => p.id !== id);
+        localStorage.setItem('snb_posts', JSON.stringify(posts));
+        render();
+    }
 };
 
 document.getElementById('logout-btn').onclick = () => {
-    localStorage.clear();
+    localStorage.removeItem('snb_admin_status');
     location.reload();
 };
 
-document.getElementById('open-login-btn').onclick = () => document.getElementById('login-modal').style.display='flex';
-document.getElementById('close-modal').onclick = () => document.getElementById('login-modal').style.display='none';
-
-// Start
-draw();
+loginBtn.onclick = () => {
+    document.getElementById('error-msg').style.display = 'none';
+    document.getElementById('login-modal').style.display = 'flex';
+};
+document.getElementById('close-modal').onclick = () => document.getElementById('login-modal').style.display = 'none';
