@@ -7,30 +7,31 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
-<body class="loading">
+<body class="dark-mode">
 
     <div id="access-overlay" class="overlay">
         <div class="access-content">
             <div class="checkmark">✔</div>
             <h2>LOGIN ACCEPTED</h2>
+            <p>Welcome back, Team Sixssilicious</p>
         </div>
     </div>
 
     <nav>
         <div class="nav-container">
             <div class="brand">
-                <img src="1000041430.png" alt="Logo" class="nav-logo" onerror="this.src='https://via.placeholder.com/50?text=SNB'">
+                <img src="1000041430.png" alt="SNB Logo" class="nav-logo">
                 <span class="logo-text">SIXSSILICIOUS</span>
             </div>
-            <button id="open-login-btn" class="admin-icon-btn">⚙️ Admin Login</button>
+            <button id="open-login-btn" class="admin-trigger">ADMIN LOGIN</button>
         </div>
     </nav>
 
     <header class="hero">
         <div class="hero-inner">
-            <p class="top-tag">SIMPLE & DELICIOUS</p>
-            <h1>NUTRITIOUS BITES</h1>
-            <p class="sub-tag">Unang tikim, lasap mo ang lalim</p>
+            <p class="tagline">UNANG TIKIM, LASAP MO ANG LALIM</p>
+            <h1>SIMPLE & DELICIOUS NUTRITIOUS BITES</h1>
+            <div class="glow-line"></div>
         </div>
     </header>
 
@@ -41,26 +42,27 @@
 
     <div id="login-modal" class="modal">
         <div class="modal-box">
-            <h3>ADMIN ACCESS</h3>
-            <input type="text" id="user-input" placeholder="Username">
+            <h3>TEAM ACCESS</h3>
+            <input type="text" id="user-input" placeholder="Admin Name">
             <input type="password" id="pass-input" placeholder="Password">
-            <button id="submit-login">UNLOCK PANEL</button>
-            <button id="close-modal" class="cancel-link">Back to Website</button>
-            <p id="error-msg" class="error">Access Denied</p>
+            <button id="submit-login">UNLOCK</button>
+            <button id="close-modal" class="close-link">Back to Site</button>
+            <p id="error-msg" class="error-text" style="display: none;">ACCESS DENIED: INVALID KEY</p>
         </div>
     </div>
 
-    <div id="admin-panel" class="admin-panel">
-        <div class="admin-container">
-            <div class="admin-controls">
+    <div id="admin-panel" class="admin-dock">
+        <div class="dock-container">
+            <div class="dock-header">NEW CREATION</div>
+            <div class="dock-inputs">
                 <input type="text" id="new-name" placeholder="Item Name">
-                <input type="text" id="new-cat" placeholder="Category (e.g. DINNER)">
-                <label class="file-label">
-                    <span>📷 Upload Photo</span>
+                <input type="text" id="new-cat" placeholder="Category (e.g. SNACKS)">
+                <label class="file-btn">
+                    <span>📷 UPLOAD IMAGE</span>
                     <input type="file" id="new-image-file" accept="image/*">
                 </label>
-                <button id="add-btn">POST PRODUCT</button>
-                <button id="logout-btn" class="logout">LOGOUT</button>
+                <button id="add-btn">PUBLISH</button>
+                <button id="logout-btn" class="logout-btn">LOGOUT</button>
             </div>
         </div>
     </div>
