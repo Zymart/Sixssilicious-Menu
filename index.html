@@ -3,30 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sixssilicious Admin</title>
+    <title>Sixssilicious | Menu</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="login-container">
-        <h1>SIXSSILICIOUS</h1>
-        <p class="accent-text">TEAM ACCESS ONLY</p>
-        
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <button id="login-btn">Login</button>
-        <p id="error-msg" class="error">Access Denied: Invalid Credentials</p>
+    <nav>
+        <div class="logo">SIXSSILICIOUS</div>
+        <button id="admin-login-btn">Admin Login</button>
+    </nav>
+
+    <main id="public-view">
+        <header>
+            <h1>SIXSSILICIOUS</h1>
+            <p class="tagline">GRITTY • SMOKY • BOLD</p>
+        </header>
+
+        <div class="container" id="menu-container">
+            <p class="no-items">The kitchen is prepping... check back soon for new items!</p>
+        </div>
+    </main>
+
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <h2>TEAM ACCESS</h2>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button id="auth-btn">Authorize</button>
+            <button id="close-btn" class="outline-btn">Cancel</button>
+            <p id="error-msg" class="error">Access Denied</p>
+        </div>
     </div>
 
-    <div id="main-content" style="display: none;">
-        <div class="admin-banner">ACCESS GRANTED: ADMIN PANEL ACTIVE</div>
-        <h1>SIXSSILICIOUS</h1>
-        <div class="dashboard-box">
-            <p>Welcome to the command center.</p>
-            <p>Products have been cleared. Ready for new input.</p>
+    <div id="admin-panel" style="display: none;">
+        <div class="admin-banner">ADMIN MODE ACTIVE</div>
+        <div class="container">
+            <h3>Add New Product</h3>
+            <div class="add-form">
+                <input type="text" id="new-item-name" placeholder="Item Name">
+                <input type="text" id="new-item-desc" placeholder="Description">
+                <input type="text" id="new-item-price" placeholder="Price (e.g. $15)">
+                <button id="add-product-btn">Post to Menu</button>
+            </div>
+            <button id="logout-btn" class="outline-btn">Exit Admin Mode</button>
         </div>
-        
-        <button id="logout-btn" class="outline-btn">Logout</button>
     </div>
 
     <script src="script.js"></script>
