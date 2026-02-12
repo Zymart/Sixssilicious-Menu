@@ -1,4 +1,3 @@
-// Select Elements
 const loginModal = document.getElementById('login-modal');
 const openLoginBtn = document.getElementById('open-login-btn');
 const closeLoginBtn = document.getElementById('close-modal');
@@ -6,62 +5,59 @@ const submitLoginBtn = document.getElementById('submit-login');
 const adminPanel = document.getElementById('admin-panel');
 const addProductBtn = document.getElementById('add-btn');
 const productGrid = document.getElementById('product-grid');
-const logoutBtn = document.getElementById('logout-btn');
+const imageInput = document.getElementById('new-image-file');
 
-// Show Modal
-openLoginBtn.addEventListener('click', () => {
-    loginModal.style.display = 'flex';
-});
+// Show/Hide Modal
+openLoginBtn.onclick = () => loginModal.style.display = 'flex';
+closeLoginBtn.onclick = () => loginModal.style.display = 'none';
 
-// Close Modal
-closeLoginBtn.addEventListener('click', () => {
-    loginModal.style.display = 'none';
-});
-
-// Login Logic
-submitLoginBtn.addEventListener('click', () => {
+// Login
+submitLoginBtn.onclick = () => {
     const user = document.getElementById('user-input').value;
     const pass = document.getElementById('pass-input').value;
     const team = ["Zymart", "Brigette", "Lance", "Taduran"];
 
     if (team.includes(user) && pass === "sixssiliciousteam") {
         loginModal.style.display = 'none';
-        adminPanel.style.display = 'block'; // Show Admin Tools
-        openLoginBtn.style.display = 'none'; // Hide Login Button
+        adminPanel.style.display = 'block';
+        openLoginBtn.style.display = 'none';
     } else {
         document.getElementById('error-msg').style.display = 'block';
     }
-});
+};
 
-// Add Product Logic
-addProductBtn.addEventListener('click', () => {
+// Add Product with File Upload
+addProductBtn.onclick = () => {
     const name = document.getElementById('new-name').value;
     const cat = document.getElementById('new-cat').value;
-    const img = document.getElementById('new-img').value || 'https://via.placeholder.com/500';
+    const file = imageInput.files[0];
 
-    if (name && cat) {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.innerHTML = `
-            <img src="${img}" alt="${name}">
-            <div class="card-content">
-                <span class="category">${cat}</span>
-                <h3>${name}</h3>
-                <div style="color: #fbc02d;">⭐⭐⭐⭐⭐ 5.0</div>
-            </div>
-        `;
-        productGrid.appendChild(card);
+    if (name && cat && file) {
+        const reader = new FileReader();
         
-        // Clear inputs after posting
+        reader.onload = function(e) {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                <img src="${e.target.result}" alt="${name}">
+                <div class="card-content">
+                    <span class="category">${cat}</span>
+                    <h3>${name}</h3>
+                    <div style="color: #fbc02d;">⭐⭐⭐⭐⭐ 5.0</div>
+                </div>
+            `;
+            productGrid.appendChild(card);
+        }
+        
+        reader.readAsDataURL(file); // Convert image to data for display
+
+        // Reset form
         document.getElementById('new-name').value = '';
         document.getElementById('new-cat').value = '';
-        document.getElementById('new-img').value = '';
+        imageInput.value = '';
     } else {
-        alert("Please enter at least a Name and Category!");
+        alert("Fill in Name, Category, and Upload an Image!");
     }
-});
+};
 
-// Logout
-logoutBtn.addEventListener('click', () => {
-    location.reload();
-});
+document.getElementById('logout-btn').onclick = () => location.reload();
