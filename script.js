@@ -1,35 +1,43 @@
+// ELEMENTS
 const loginModal = document.getElementById('login-modal');
 const openLoginBtn = document.getElementById('open-login-btn');
 const adminPanel = document.getElementById('admin-panel');
 const productGrid = document.getElementById('product-grid');
 const accessOverlay = document.getElementById('access-overlay');
 
+// 1. IMMEDIATE SESSION CHECK (The Fix)
+if (localStorage.getItem('sixss_admin_active') === 'true') {
+    // We do this outside window.onload so it happens instantly
+    document.addEventListener("DOMContentLoaded", () => {
+        showAdminUI();
+    });
+}
+
+// Load products from storage
 let products = JSON.parse(localStorage.getItem('sixss_products')) || [];
 
-// 1. Check if already logged in on Load
 window.onload = () => {
-    if (localStorage.getItem('sixss_admin') === 'true') {
-        showAdminUI();
-    }
     renderProducts();
 };
 
-// 2. Login Logic
+// 2. LOGIN LOGIC
 document.getElementById('submit-login').onclick = () => {
     const user = document.getElementById('user-input').value;
     const pass = document.getElementById('pass-input').value;
     const team = ["Zymart", "Brigette", "Lance", "Taduran"];
 
     if (team.includes(user) && pass === "sixssiliciousteam") {
-        localStorage.setItem('sixss_admin', 'true');
+        // SAVE STATUS PERMANENTLY
+        localStorage.setItem('sixss_admin_active', 'true');
+        
         loginModal.style.display = 'none';
         
-        // Show Success Effect
+        // Success Effect
         accessOverlay.style.display = 'flex';
         setTimeout(() => {
             accessOverlay.style.display = 'none';
             showAdminUI();
-        }, 1500);
+        }, 1200);
     } else {
         document.getElementById('error-msg').style.display = 'block';
     }
@@ -41,16 +49,22 @@ function showAdminUI() {
     document.body.classList.add('admin-mode');
 }
 
-// 3. Add Product & Save to LocalStorage
+// 3. POSTING LOGIC
 document.getElementById('add-btn').onclick = () => {
     const name = document.getElementById('new-name').value;
     const cat = document.getElementById('new-cat').value;
-    const file = document.getElementById('new-image-file').files[0];
+    const fileInput = document.getElementById('new-image-file');
+    const file = fileInput.files[0];
 
     if (name && cat && file) {
         const reader = new FileReader();
         reader.onload = (e) => {
-            const newProduct = { id: Date.now(), name, cat, img: e.target.result };
+            const newProduct = { 
+                id: Date.now(), 
+                name: name, 
+                cat: cat, 
+                img: e.target.result 
+            };
             products.push(newProduct);
             localStorage.setItem('sixss_products', JSON.stringify(products));
             renderProducts();
@@ -58,19 +72,22 @@ document.getElementById('add-btn').onclick = () => {
             // Clear inputs
             document.getElementById('new-name').value = '';
             document.getElementById('new-cat').value = '';
+            fileInput.value = '';
         };
         reader.readAsDataURL(file);
+    } else {
+        alert("Please fill all fields and upload an image!");
     }
 };
 
-// 4. Render Products
+// 4. RENDER WITH DELETE BUTTON
 function renderProducts() {
     productGrid.innerHTML = '';
     products.forEach(p => {
         const card = document.createElement('div');
         card.className = 'product-card';
         card.innerHTML = `
-            <button class="del-btn" onclick="deleteProduct(${p.id})">X</button>
+            <button class="del-btn" onclick="deleteProduct(${p.id})">×</button>
             <img src="${p.img}">
             <div class="card-content">
                 <span class="category">${p.cat}</span>
@@ -82,16 +99,18 @@ function renderProducts() {
     });
 }
 
-// 5. Delete Product
+// 5. DELETE FUNCTION
 window.deleteProduct = (id) => {
-    products = products.filter(p => p.id !== id);
-    localStorage.setItem('sixss_products', JSON.stringify(products));
-    renderProducts();
+    if(confirm("Delete this post?")) {
+        products = products.filter(p => p.id !== id);
+        localStorage.setItem('sixss_products', JSON.stringify(products));
+        renderProducts();
+    }
 };
 
-// 6. Logout
+// 6. LOGOUT (Clears session)
 document.getElementById('logout-btn').onclick = () => {
-    localStorage.removeItem('sixss_admin');
+    localStorage.removeItem('sixss_admin_active');
     location.reload();
 };
 
