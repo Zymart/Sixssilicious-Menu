@@ -1,7 +1,7 @@
 const BIN_ID = '698dbb6d43b1c97be9795688';
 const API_KEY = '$2a$10$McXg3fOwbLYW3Sskgfroj.nzMjtwwubDEz08zXpBN32KQ.8MvCJgK';
 
-// NOTIFICATION SYSTEM
+// NOTIFICATION
 function showNotify(msg, type = 'success') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
@@ -29,7 +29,7 @@ async function optimizeImage(base64Str) {
     });
 }
 
-// CLOUD DATA
+// DATA FETCHING
 async function loadCloud() {
     try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?meta=false`, { headers: { 'X-Master-Key': API_KEY } });
@@ -49,7 +49,7 @@ async function saveCloud(data) {
     } catch (e) { return false; }
 }
 
-// RENDER GRID
+// RENDERING
 const scrollObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('is-visible'); });
 }, { threshold: 0.1 });
@@ -67,22 +67,30 @@ async function render() {
     });
 }
 
-// ADMIN PANEL CONTROLS
+// MODAL CONTROLS
 const productModal = document.getElementById('product-modal');
+const openBtn = document.getElementById('open-product-modal');
 
-document.getElementById('open-product-modal').onclick = () => productModal.style.display = 'flex';
+// Ensure the button works by using addEventListener
+if(openBtn) {
+    openBtn.addEventListener('click', () => {
+        productModal.style.display = 'flex';
+    });
+}
+
 document.getElementById('close-product-modal').onclick = () => productModal.style.display = 'none';
 
+// ADD PRODUCT
 document.getElementById('add-btn').onclick = async () => {
     const name = document.getElementById('new-name').value;
     const price = document.getElementById('new-price').value;
     const cat = document.getElementById('new-cat').value;
     const file = document.getElementById('new-image-file').files[0];
 
-    if (!name || !price || !file) { showNotify("Missing fields!", "error"); return; }
+    if (!name || !price || !file) { showNotify("Complete the details!", "error"); return; }
 
     const btn = document.getElementById('add-btn');
-    btn.innerText = "PROCESSING..."; btn.disabled = true;
+    btn.innerText = "PUBLISHING..."; btn.disabled = true;
 
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -91,14 +99,13 @@ document.getElementById('add-btn').onclick = async () => {
         list.push({ id: Date.now().toString(), name, price, cat, img: smallImg });
 
         if (await saveCloud(list)) {
-            showNotify(`${name} published!`);
+            showNotify(`${name} is now live!`);
             productModal.style.display = 'none';
-            // Clear inputs
             document.getElementById('new-name').value = '';
             document.getElementById('new-price').value = '';
             document.getElementById('new-image-file').value = '';
             render();
-        } else { showNotify("Upload Error!", "error"); }
+        } else { showNotify("Cloud Error!", "error"); }
         btn.innerText = "PUBLISH ITEM"; btn.disabled = false;
     };
     reader.readAsDataURL(file);
@@ -108,12 +115,13 @@ window.deleteItem = async (id) => {
     if(!confirm("Delete this product?")) return;
     let list = await loadCloud();
     list = list.filter(i => i.id !== id);
-    if(await saveCloud(list)) { showNotify("Deleted."); render(); }
+    if(await saveCloud(list)) { showNotify("Removed."); render(); }
 };
 
-// LOGIN LOGIC
+// AUTHENTICATION CHECK
 if (localStorage.getItem('snb_auth') === 'true') {
     document.getElementById('admin-panel').style.display = 'block';
+    document.getElementById('open-product-modal').style.display = 'flex'; // SHOW CREATE BUTTON
     document.body.classList.add('admin-mode');
     document.getElementById('open-login-btn').style.display = 'none';
 }
@@ -124,7 +132,7 @@ document.getElementById('submit-login').onclick = () => {
     if (["Zymart", "Brigette", "Lance", "Taduran"].includes(u) && p === "sixssiliciousteam") {
         localStorage.setItem('snb_auth', 'true');
         location.reload();
-    } else { showNotify("Invalid Credentials", "error"); }
+    } else { showNotify("Access Denied", "error"); }
 };
 
 document.getElementById('open-login-btn').onclick = () => document.getElementById('login-modal').style.display='flex';
