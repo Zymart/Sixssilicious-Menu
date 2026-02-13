@@ -1,36 +1,33 @@
 const BIN_ID = '698dbb6d43b1c97be9795688';
 const API_KEY = '$2a$10$McXg3fOwbLYW3Sskgfroj.nzMjtwwubDEz08zXpBN32KQ.8MvCJgK';
 
-// NOTIFICATIONS
 function showNotify(msg, type = 'success') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = `toast ${type === 'error' ? 'error' : ''}`;
     toast.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-xmark' : 'fa-circle-check'}"></i> <span>${msg}</span>`;
     container.appendChild(toast);
-    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 4000);
+    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
 }
 
-// ULTRA COMPRESSION (The Storage Fix)
+// ULTRA COMPRESSION TO FIX STORAGE FULL
 async function optimizeImage(base64Str) {
     return new Promise((resolve) => {
         const img = new Image();
         img.src = base64Str;
         img.onload = () => {
             const canvas = document.createElement('canvas');
-            const MAX_W = 500; // Small but clear on mobile
+            const MAX_W = 400; // Smallest size for max storage
             const scale = MAX_W / img.width;
             canvas.width = MAX_W;
             canvas.height = img.height * scale;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            // 0.5 quality saves massive amounts of text space
-            resolve(canvas.toDataURL('image/jpeg', 0.5));
+            resolve(canvas.toDataURL('image/jpeg', 0.4)); // High compression
         };
     });
 }
 
-// CLOUD
 async function loadCloud() {
     try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?meta=false`, { headers: { 'X-Master-Key': API_KEY } });
@@ -50,7 +47,6 @@ async function saveCloud(data) {
     } catch (e) { return false; }
 }
 
-// ANIMATION
 let scrollObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry, idx) => {
         if (entry.isIntersecting) {
@@ -71,7 +67,7 @@ async function render() {
             <button class="del-btn" onclick="deleteItem('${item.id}')" style="display:${localStorage.getItem('snb_auth')==='true'?'block':'none'}">×</button>
             <img src="${item.img}">
             <div class="card-content">
-                <span class="cat-label">${item.cat || 'NUTRITIOUS'}</span>
+                <span class="cat-label">${item.cat || 'MENU'}</span>
                 <h3>${item.name}</h3>
                 <span class="price-display">₱${item.price}</span>
             </div>
@@ -82,9 +78,9 @@ async function render() {
 }
 
 // UI HANDLERS
-const productModal = document.getElementById('product-modal');
-document.getElementById('open-product-modal').onclick = () => productModal.style.display = 'flex';
-document.getElementById('close-product-modal').onclick = () => productModal.style.display = 'none';
+const pModal = document.getElementById('product-modal');
+document.getElementById('open-product-modal').onclick = () => pModal.style.display = 'flex';
+document.getElementById('close-product-modal').onclick = () => pModal.style.display = 'none';
 
 document.getElementById('add-btn').onclick = async () => {
     const name = document.getElementById('new-name').value;
@@ -92,10 +88,10 @@ document.getElementById('add-btn').onclick = async () => {
     const cat = document.getElementById('new-cat').value;
     const file = document.getElementById('new-image-file').files[0];
 
-    if (!name || !price || !file) { showNotify("Incomplete form", "error"); return; }
+    if (!name || !price || !file) { showNotify("Missing fields!", "error"); return; }
 
     const btn = document.getElementById('add-btn');
-    btn.innerText = "OPTIMIZING..."; btn.disabled = true;
+    btn.innerText = "UPLOADING..."; btn.disabled = true;
 
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -104,24 +100,20 @@ document.getElementById('add-btn').onclick = async () => {
         list.push({ id: Date.now().toString(), name, price, cat, img: smallImg });
 
         if (await saveCloud(list)) {
-            showNotify(`${name} published!`);
-            productModal.style.display = 'none';
+            showNotify(`${name} added!`);
+            pModal.style.display = 'none';
             render();
         } else {
-            showNotify("STORAGE FULL! Clear data first.", "error");
+            showNotify("STORAGE FULL! Clear data.", "error");
         }
-        btn.innerText = "PUBLISH ITEM"; btn.disabled = false;
+        btn.innerText = "PUBLISH"; btn.disabled = false;
     };
     reader.readAsDataURL(file);
 };
 
-// WIPE FUNCTION (To clear hidden junk)
 document.getElementById('wipe-btn').onclick = async () => {
-    if(confirm("DANGER: This will delete everything! Are you sure?")) {
-        if(await saveCloud([])) {
-            showNotify("Storage Cleared!");
-            render();
-        }
+    if(confirm("Wipe everything?")) {
+        if(await saveCloud([])) { showNotify("Cleared!"); render(); }
     }
 };
 
@@ -129,10 +121,10 @@ window.deleteItem = async (id) => {
     if(!confirm("Delete?")) return;
     let list = await loadCloud();
     list = list.filter(i => i.id !== id);
-    if(await saveCloud(list)) { showNotify("Deleted."); render(); }
+    if(await saveCloud(list)) { showNotify("Removed."); render(); }
 };
 
-// AUTH
+// LOGIN LOGIC
 if (localStorage.getItem('snb_auth') === 'true') {
     document.getElementById('admin-panel').style.display = 'block';
     document.getElementById('open-product-modal').style.display = 'block';
@@ -146,7 +138,7 @@ document.getElementById('submit-login').onclick = () => {
     if (["Zymart", "Brigette", "Lance", "Taduran"].includes(u) && p === "sixssiliciousteam") {
         localStorage.setItem('snb_auth', 'true');
         location.reload();
-    } else { showNotify("Invalid Auth", "error"); }
+    } else { showNotify("Wrong details", "error"); }
 };
 
 document.getElementById('open-login-btn').onclick = () => document.getElementById('login-modal').style.display='flex';
